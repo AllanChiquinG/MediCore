@@ -21,6 +21,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    // Carga datos de prueba (inventados) la primera vez que se corre en desarrollo.
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<MediCoreDbContext>();
+    await DbSeeder.SeedAsync(db);
 }
 
 app.UseHttpsRedirection();
