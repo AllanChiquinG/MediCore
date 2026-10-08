@@ -48,3 +48,10 @@ GET {{host}}/api/patients/{{patientOne}}
 
 ### 7. Paciente que no existe (debe dar 404)
 GET {{host}}/api/patients/00000000-0000-0000-0000-000000000000
+
+
+### 8. Consultar receta (debe dar 200)
+GET {{host}}/api/prescriptions/33333333-3333-3333-3333-333333333301
+
+### 9. Receta que no existe (debe dar 404)
+GET {{host}}/api/prescriptions/00000000-0000-0000-0000-000000000000
