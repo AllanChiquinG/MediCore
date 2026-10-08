@@ -1,6 +1,43 @@
-@MediCore.Api_HostAddress = http://localhost:5137
+@host = https://localhost:7042
+# Cambia doctorId por un id real de tu base: sale en la respuesta de GET /api/doctors
+@doctorId = 43a43df8-d7dc-47e5-b82f-4baf36ca3fc3
+@patientOne = 22222222-2222-2222-2222-222222222201
+@patientTwo = 22222222-2222-2222-2222-222222222202
 
-GET {{MediCore.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### 1. Lista de medicos
+GET {{host}}/api/doctors
 
-###
+### 2. Horarios libres de un medico (lunes 12 de octubre de 2026)
+GET {{host}}/api/doctors/{{doctorId}}/availability?date=2026-10-12
+
+### 3. Reservar cita con el paciente 1  -> 201 Created
+POST {{host}}/api/appointments
+Content-Type: application/json
+
+{
+  "patientId": "{{patientOne}}",
+  "doctorId": "{{doctorId}}",
+  "startTime": "2026-10-12T09:00:00-06:00",
+  "reason": "Control general"
+}
+
+### 4. Mismo horario con el paciente 2 -> 409 Conflict (doble reserva bloqueada)
+POST {{host}}/api/appointments
+Content-Type: application/json
+
+{
+  "patientId": "{{patientTwo}}",
+  "doctorId": "{{doctorId}}",
+  "startTime": "2026-10-12T09:00:00-06:00",
+  "reason": "Consulta"
+}
+
+### 5. Horario fuera de la agenda (domingo) -> 400 Bad Request
+POST {{host}}/api/appointments
+Content-Type: application/json
+
+{
+  "patientId": "{{patientOne}}",
+  "doctorId": "{{doctorId}}",
+  "startTime": "2026-10-11T09:00:00-06:00"
+}
