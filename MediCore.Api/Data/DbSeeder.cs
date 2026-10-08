@@ -10,10 +10,53 @@ public static class DbSeeder
     public static readonly Guid PatientOneId = Guid.Parse("22222222-2222-2222-2222-222222222201");
     public static readonly Guid PatientTwoId = Guid.Parse("22222222-2222-2222-2222-222222222202");
 
+    public static readonly Guid PrescriptionOneId = Guid.Parse("33333333-3333-3333-3333-333333333301");
+
     public static async Task SeedAsync(MediCoreDbContext db)
     {
         if (!await db.Doctors.AnyAsync()) SeedDoctors(db);
         if (!await db.Patients.AnyAsync()) SeedPatients(db);
+
+        await db.SaveChangesAsync();
+
+        if (!await db.Prescriptions.AnyAsync()) await SeedPrescriptionAsync(db);
+    }
+
+    // Una cita pasada + consulta + receta de prueba (datos inventados).
+    private static async Task SeedPrescriptionAsync(MediCoreDbContext db)
+    {
+        var doctor = await db.Doctors.OrderBy(d => d.LicenseNumber).FirstAsync();
+        var start = new DateTimeOffset(2026, 9, 1, 15, 0, 0, TimeSpan.Zero);
+
+        var appointment = new Appointment
+        {
+            Id = Guid.NewGuid(),
+            PatientId = PatientOneId,
+            DoctorId = doctor.Id,
+            StartTime = start,
+            EndTime = start.AddMinutes(30),
+            Status = AppointmentStatus.Completed,
+            Reason = "Control general"
+        };
+        var consultation = new Consultation
+        {
+            Id = Guid.NewGuid(),
+            AppointmentId = appointment.Id,
+            Diagnosis = "Resfriado comun"
+        };
+
+        db.Appointments.Add(appointment);
+        db.Consultations.Add(consultation);
+        db.Prescriptions.Add(new Prescription
+        {
+            Id = PrescriptionOneId,
+            ConsultationId = consultation.Id,
+            PatientId = PatientOneId,
+            DoctorId = doctor.Id,
+            Medication = "Paracetamol 500 mg",
+            Dosage = "1 tableta cada 8 horas",
+            Instructions = "Por 3 dias"
+        });
 
         await db.SaveChangesAsync();
     }
